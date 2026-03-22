@@ -116,88 +116,28 @@
 
       <div class="alerts-list">
 
-        <div class="alert-card nouvelle">
-          <div class="alert-stripe"></div>
-          <div>
-            <div class="alert-header">
-              <span class="alert-type">Batterie faible</span>
-              <span class="badge nouvelle">Nouvelle</span>
-            </div>
-            <div class="alert-desc">Le drone DRN-002 a atteint un niveau de batterie critique (78%) en cours de mission. Retour base recommandé.</div>
-            <div class="alert-meta">
-              <span class="alert-meta-item">Mission <strong>#12</strong></span>
-              <span class="alert-meta-item">Drone <strong>DRN-002</strong></span>
-              <span class="alert-meta-item">Zone <strong>B4</strong></span>
-            </div>
-          </div>
-          <div class="alert-actions">
-            <span class="alert-time">14:47:02</span>
-            <button class="action-btn resolve">✓ Résoudre</button>
-            <button class="action-btn">Voir mission</button>
-          </div>
-        </div>
-
-        <div class="alert-card nouvelle">
-          <div class="alert-stripe"></div>
-          <div>
-            <div class="alert-header">
-              <span class="alert-type">Écart inventaire</span>
-              <span class="badge nouvelle">Nouvelle</span>
-            </div>
-            <div class="alert-desc">Référence 4829A — quantité attendue : 12, quantité trouvée : 9. Écart de –3 unités détecté en zone A3.</div>
-            <div class="alert-meta">
-              <span class="alert-meta-item">Mission <strong>#12</strong></span>
-              <span class="alert-meta-item">Drone <strong>DRN-002</strong></span>
-              <span class="alert-meta-item">Zone <strong>A3</strong></span>
-            </div>
-          </div>
-          <div class="alert-actions">
-            <span class="alert-time">14:44:18</span>
-            <button class="action-btn resolve">✓ Résoudre</button>
-            <button class="action-btn">Voir rapport</button>
-          </div>
-        </div>
-
-        <div class="alert-card en_traitement">
-          <div class="alert-stripe"></div>
-          <div>
-            <div class="alert-header">
-              <span class="alert-type">Déviation de trajectoire</span>
-              <span class="badge en_traitement">En traitement</span>
-            </div>
-            <div class="alert-desc">Le drone DRN-001 a dévié de 2.4 m de la trajectoire planifiée lors du passage en zone C2. Obstacle détecté et contourné.</div>
-            <div class="alert-meta">
-              <span class="alert-meta-item">Mission <strong>#11</strong></span>
-              <span class="alert-meta-item">Drone <strong>DRN-001</strong></span>
-              <span class="alert-meta-item">Zone <strong>C2</strong></span>
-            </div>
-          </div>
-          <div class="alert-actions">
-            <span class="alert-time">11:22:45</span>
-            <button class="action-btn resolve">✓ Résoudre</button>
-            <button class="action-btn">Voir mission</button>
-          </div>
-        </div>
-
-        <div class="alert-card resolue">
-          <div class="alert-stripe"></div>
-          <div>
-            <div class="alert-header">
-              <span class="alert-type">Perte de connexion</span>
-              <span class="badge resolue">Résolue</span>
-            </div>
-            <div class="alert-desc">Interruption de signal de 3 secondes sur DRN-004. Reconnexion automatique effectuée. Aucun impact sur la mission.</div>
-            <div class="alert-meta">
-              <span class="alert-meta-item">Mission <strong>#10</strong></span>
-              <span class="alert-meta-item">Drone <strong>DRN-004</strong></span>
-              <span class="alert-meta-item">Zone <strong>D1</strong></span>
-            </div>
-          </div>
-          <div class="alert-actions">
-            <span class="alert-time">09:14:03</span>
-            <button class="action-btn">Voir mission</button>
-          </div>
-        </div>
+{% for alerte in alertes %}
+<div class="alert-card {{ alerte.statut }}">
+  <div class="alert-stripe"></div>
+  <div>
+    <div class="alert-header">
+      <span class="alert-type">{{ alerte.get_type_anomalie_display }}</span>
+      <span class="badge {{ alerte.statut }}">{{ alerte.get_statut_display }}</span>
+    </div>
+    <div class="alert-desc">Mission #{{ alerte.mission.pk }} — Drone {{ alerte.mission.drone.identifiant }}</div>
+    <div class="alert-meta">
+      <span class="alert-meta-item">Mission <strong>#{{ alerte.mission.pk }}</strong></span>
+      <span class="alert-meta-item">Drone <strong>{{ alerte.mission.drone.identifiant }}</strong></span>
+    </div>
+  </div>
+  <div class="alert-actions">
+    <span class="alert-time">{{ alerte.horodatage|date:"H:i:s" }}</span>
+    <button class="action-btn">Voir mission</button>
+  </div>
+</div>
+{% empty %}
+<div style="text-align:center;color:#5a6a85;padding:32px">Aucune alerte.</div>
+{% endfor %}
 
       </div>
     </div>

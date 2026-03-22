@@ -209,46 +209,25 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td><span class="drone-id">DRN-001</span></td>
-              <td><span class="drone-model">DJI Matrice 30T<small>Capteur thermique + RGB</small></span></td>
-              <td><div class="battery-wrap"><div class="battery-bar"><div class="battery-fill" style="width:87%;background:#00e5a0"></div></div><span class="battery-pct" style="color:#00e5a0">87%</span></div></td>
-              <td><span class="badge disponible">Disponible</span></td>
-              <td style="font-size:12px;color:#5a6a85;font-family:'DM Mono',monospace">21/03/2026</td>
-              <td><div class="actions"><button class="icon-btn">✏</button><button class="icon-btn">▶</button></div></td>
-            </tr>
-            <tr>
-              <td><span class="drone-id">DRN-002</span></td>
-              <td><span class="drone-model">DJI Matrice 30T<small>Capteur thermique + RGB</small></span></td>
-              <td><div class="battery-wrap"><div class="battery-bar"><div class="battery-fill" style="width:100%;background:#0096ff"></div></div><span class="battery-pct" style="color:#0096ff">100%</span></div></td>
-              <td><span class="badge en_vol">En vol</span></td>
-              <td style="font-size:12px;color:#5a6a85;font-family:'DM Mono',monospace">22/03/2026</td>
-              <td><div class="actions"><button class="icon-btn">✏</button><button class="icon-btn">◼</button></div></td>
-            </tr>
-            <tr>
-              <td><span class="drone-id">DRN-003</span></td>
-              <td><span class="drone-model">Parrot ANAFI AI<small>Lidar + caméra 4K</small></span></td>
-              <td><div class="battery-wrap"><div class="battery-bar"><div class="battery-fill" style="width:23%;background:#ff4455"></div></div><span class="battery-pct" style="color:#ff4455">23%</span></div></td>
-              <td><span class="badge maintenance">Maintenance</span></td>
-              <td style="font-size:12px;color:#5a6a85;font-family:'DM Mono',monospace">18/03/2026</td>
-              <td><div class="actions"><button class="icon-btn">✏</button><button class="icon-btn">▶</button></div></td>
-            </tr>
-            <tr>
-              <td><span class="drone-id">DRN-004</span></td>
-              <td><span class="drone-model">Parrot ANAFI AI<small>Lidar + caméra 4K</small></span></td>
-              <td><div class="battery-wrap"><div class="battery-bar"><div class="battery-fill" style="width:65%;background:#00e5a0"></div></div><span class="battery-pct" style="color:#00e5a0">65%</span></div></td>
-              <td><span class="badge disponible">Disponible</span></td>
-              <td style="font-size:12px;color:#5a6a85;font-family:'DM Mono',monospace">20/03/2026</td>
-              <td><div class="actions"><button class="icon-btn">✏</button><button class="icon-btn">▶</button></div></td>
-            </tr>
-            <tr>
-              <td><span class="drone-id">DRN-005</span></td>
-              <td><span class="drone-model">Skydio X10<small>Autonomie étendue</small></span></td>
-              <td><div class="battery-wrap"><div class="battery-bar"><div class="battery-fill" style="width:0%;background:#ff4455"></div></div><span class="battery-pct" style="color:#ff4455">0%</span></div></td>
-              <td><span class="badge hors_service">Hors service</span></td>
-              <td style="font-size:12px;color:#5a6a85;font-family:'DM Mono',monospace">10/03/2026</td>
-              <td><div class="actions"><button class="icon-btn">✏</button></div></td>
-            </tr>
+{% for drone in drones %}
+<tr>
+  <td><span class="drone-id">{{ drone.identifiant }}</span></td>
+  <td><span class="drone-model">{{ drone.modele }}<small>{{ drone.get_statut_display }}</small></span></td>
+  <td>
+    <div class="battery-wrap">
+      <div class="battery-bar">
+        <div class="battery-fill" style="width:{{ drone.niveau_batterie }}%;background:{% if drone.niveau_batterie > 50 %}#00e5a0{% elif drone.niveau_batterie > 20 %}#ffb020{% else %}#ff4455{% endif %}"></div>
+      </div>
+      <span class="battery-pct" style="color:{% if drone.niveau_batterie > 50 %}#00e5a0{% elif drone.niveau_batterie > 20 %}#ffb020{% else %}#ff4455{% endif %}">{{ drone.niveau_batterie }}%</span>
+    </div>
+  </td>
+  <td><span class="badge {{ drone.statut }}">{{ drone.get_statut_display }}</span></td>
+  <td style="font-size:12px;color:#5a6a85;font-family:'DM Mono',monospace">—</td>
+  <td><div class="actions"><button class="icon-btn">✏</button></div></td>
+</tr>
+{% empty %}
+<tr><td colspan="6" style="text-align:center;color:#5a6a85;padding:32px">Aucun drone enregistré.</td></tr>
+{% endfor %}
           </tbody>
         </table>
       </div>
