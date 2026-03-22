@@ -1,0 +1,207 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alertes — DroneAudit</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f1a; --surface: #131929; --surface2: #1a2236;
+    --border: #1f2e47; --accent: #00e5a0; --accent2: #0096ff;
+    --warn: #ffb020; --danger: #ff4455; --text: #e8edf5;
+    --muted: #5a6a85; --mono: 'DM Mono', monospace; --sans: 'Syne', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 40px 40px; opacity: 0.3; pointer-events: none; z-index: 0; }
+  .layout { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+  .sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px 0; flex-shrink: 0; }
+  .logo { padding: 0 24px 32px; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: var(--accent); }
+  .logo span { color: var(--text); }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 11px 24px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .15s; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent); background: rgba(0,229,160,0.07); border-right: 2px solid var(--accent); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-section { padding: 16px 24px 8px; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  .main { flex: 1; display: flex; flex-direction: column; }
+  .topbar { padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .topbar-title { font-size: 20px; font-weight: 700; }
+  .topbar-sub { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
+  .content { padding: 28px 32px; flex: 1; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+  .stat-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .stat-val { font-size: 28px; font-weight: 700; margin-top: 6px; font-family: var(--mono); }
+
+  .filters { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
+  .search { flex: 1; max-width: 320px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; transition: border-color .15s; }
+  .search:focus { border-color: var(--accent); }
+  .search::placeholder { color: var(--muted); }
+  .filter-btn { padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .filter-btn.warn.active { border-color: var(--warn); color: var(--warn); background: rgba(255,176,32,0.06); }
+  .filter-btn.danger.active { border-color: var(--danger); color: var(--danger); background: rgba(255,68,85,0.06); }
+  .filter-btn.ok.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,160,0.06); }
+
+  .alerts-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .alert-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 20px;
+    display: grid; grid-template-columns: 4px 1fr auto;
+    gap: 16px; align-items: start; transition: border-color .15s; cursor: pointer;
+  }
+  .alert-card:hover { border-color: var(--muted); }
+  .alert-stripe { border-radius: 2px; align-self: stretch; }
+  .alert-card.nouvelle .alert-stripe { background: var(--danger); }
+  .alert-card.en_traitement .alert-stripe { background: var(--warn); }
+  .alert-card.resolue .alert-stripe { background: var(--accent); }
+
+  .alert-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .alert-type { font-size: 13px; font-weight: 700; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.3px; }
+  .badge.nouvelle { background: rgba(255,68,85,0.1); color: var(--danger); }
+  .badge.en_traitement { background: rgba(255,176,32,0.1); color: var(--warn); }
+  .badge.resolue { background: rgba(0,229,160,0.1); color: var(--accent); }
+
+  .alert-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .alert-meta { display: flex; gap: 16px; margin-top: 10px; }
+  .alert-meta-item { font-size: 11px; font-family: var(--mono); color: var(--muted); }
+  .alert-meta-item strong { color: var(--text); font-weight: 500; }
+
+  .alert-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .action-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--sans); font-size: 11px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .action-btn.resolve { border-color: rgba(0,229,160,0.3); color: var(--accent); }
+  .alert-time { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="logo">Drone<span>Audit</span></div>
+    <div class="nav-section">Navigation</div>
+    <a class="nav-item"><span class="nav-icon">◈</span> Drones</a>
+    <a class="nav-item"><span class="nav-icon">◎</span> Missions</a>
+    <a class="nav-item active"><span class="nav-icon">⚡</span> Alertes</a>
+    <a class="nav-item"><span class="nav-icon">📋</span> Rapports</a>
+    <div class="nav-section" style="margin-top:auto">Système</div>
+    <a class="nav-item"><span class="nav-icon">⚙</span> Paramètres</a>
+    <a class="nav-item"><span class="nav-icon">👤</span> ilyan</a>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Alertes & anomalies</div>
+        <div class="topbar-sub">sprint 1 · 22/03/2026 · 3 alertes actives</div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val">12</div></div>
+        <div class="stat-card"><div class="stat-label">Nouvelles</div><div class="stat-val" style="color:var(--danger)">3</div></div>
+        <div class="stat-card"><div class="stat-label">En traitement</div><div class="stat-val" style="color:var(--warn)">2</div></div>
+        <div class="stat-card"><div class="stat-label">Résolues</div><div class="stat-val" style="color:var(--accent)">7</div></div>
+      </div>
+
+      <div class="filters">
+        <input class="search" type="text" placeholder="Rechercher une alerte…">
+        <button class="filter-btn danger active">Nouvelles</button>
+        <button class="filter-btn warn">En traitement</button>
+        <button class="filter-btn ok">Résolues</button>
+      </div>
+
+      <div class="alerts-list">
+
+        <div class="alert-card nouvelle">
+          <div class="alert-stripe"></div>
+          <div>
+            <div class="alert-header">
+              <span class="alert-type">Batterie faible</span>
+              <span class="badge nouvelle">Nouvelle</span>
+            </div>
+            <div class="alert-desc">Le drone DRN-002 a atteint un niveau de batterie critique (78%) en cours de mission. Retour base recommandé.</div>
+            <div class="alert-meta">
+              <span class="alert-meta-item">Mission <strong>#12</strong></span>
+              <span class="alert-meta-item">Drone <strong>DRN-002</strong></span>
+              <span class="alert-meta-item">Zone <strong>B4</strong></span>
+            </div>
+          </div>
+          <div class="alert-actions">
+            <span class="alert-time">14:47:02</span>
+            <button class="action-btn resolve">✓ Résoudre</button>
+            <button class="action-btn">Voir mission</button>
+          </div>
+        </div>
+
+        <div class="alert-card nouvelle">
+          <div class="alert-stripe"></div>
+          <div>
+            <div class="alert-header">
+              <span class="alert-type">Écart inventaire</span>
+              <span class="badge nouvelle">Nouvelle</span>
+            </div>
+            <div class="alert-desc">Référence 4829A — quantité attendue : 12, quantité trouvée : 9. Écart de –3 unités détecté en zone A3.</div>
+            <div class="alert-meta">
+              <span class="alert-meta-item">Mission <strong>#12</strong></span>
+              <span class="alert-meta-item">Drone <strong>DRN-002</strong></span>
+              <span class="alert-meta-item">Zone <strong>A3</strong></span>
+            </div>
+          </div>
+          <div class="alert-actions">
+            <span class="alert-time">14:44:18</span>
+            <button class="action-btn resolve">✓ Résoudre</button>
+            <button class="action-btn">Voir rapport</button>
+          </div>
+        </div>
+
+        <div class="alert-card en_traitement">
+          <div class="alert-stripe"></div>
+          <div>
+            <div class="alert-header">
+              <span class="alert-type">Déviation de trajectoire</span>
+              <span class="badge en_traitement">En traitement</span>
+            </div>
+            <div class="alert-desc">Le drone DRN-001 a dévié de 2.4 m de la trajectoire planifiée lors du passage en zone C2. Obstacle détecté et contourné.</div>
+            <div class="alert-meta">
+              <span class="alert-meta-item">Mission <strong>#11</strong></span>
+              <span class="alert-meta-item">Drone <strong>DRN-001</strong></span>
+              <span class="alert-meta-item">Zone <strong>C2</strong></span>
+            </div>
+          </div>
+          <div class="alert-actions">
+            <span class="alert-time">11:22:45</span>
+            <button class="action-btn resolve">✓ Résoudre</button>
+            <button class="action-btn">Voir mission</button>
+          </div>
+        </div>
+
+        <div class="alert-card resolue">
+          <div class="alert-stripe"></div>
+          <div>
+            <div class="alert-header">
+              <span class="alert-type">Perte de connexion</span>
+              <span class="badge resolue">Résolue</span>
+            </div>
+            <div class="alert-desc">Interruption de signal de 3 secondes sur DRN-004. Reconnexion automatique effectuée. Aucun impact sur la mission.</div>
+            <div class="alert-meta">
+              <span class="alert-meta-item">Mission <strong>#10</strong></span>
+              <span class="alert-meta-item">Drone <strong>DRN-004</strong></span>
+              <span class="alert-meta-item">Zone <strong>D1</strong></span>
+            </div>
+          </div>
+          <div class="alert-actions">
+            <span class="alert-time">09:14:03</span>
+            <button class="action-btn">Voir mission</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
